@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search for Medication induced N/V</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+	.button-container {
+    		position: fixed;
+    		bottom: 16px;
+    		display: flex;
+    		width: 100%; /* ทำให้คอนเทนเนอร์ขยายเต็มหน้าจอ */
+    		justify-content: center; /* จัดให้ปุ่มอยู่ตรงกลางในแนวนอน */
+    		align-items: center; /* จัดให้อยู่แนวกลาง */
+    		gap: 10px; /* ระยะห่างระหว่างปุ่ม */
+        }
+	.btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 12px;
+}
+
+footer nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+}
+    </style>
+</head>
+<body>
+<div class="button-container">
+	<a href="index.html" class="btn">HOME</a>
+	<a href="Premed.html" class="btn">Premed</a></div>
+    <h1>Search for Medication induced N/V</h1>
+    <form id="searchForm">
+        <label for="searchTerm">คำที่ต้องการค้นหา:</label>
+        <input type="text" id="searchTerm" name="searchTerm" required>
+        <button type="submit">Search</button>
+    </form>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>Emesis risk</th>
+                <th>Medication</th>
+            </tr>
+        </thead>
+        <tbody id="resultsTable">
+        </tbody>
+    </table>
+
+    <script>
+        const customLines = [
+            { id: "High emetic risk", text: "AC combination defined as any chemotherapy regimen that contains an anthracycline and cyclophosphamide" },
+{ id: "High emetic risk", text: "Carboplatin AUC ≥4" },
+{ id: "High emetic risk", text: "Carmustine >250 mg/m2" },
+{ id: "High emetic risk", text: "Cisplatin" },
+{ id: "High emetic risk", text: "Cyclophosphamide >1500 mg/m2" },
+{ id: "High emetic risk", text: "Dacarbazine" },
+{ id: "High emetic risk", text: "Datopotamab deruxtecan-dlnk" },
+{ id: "High emetic risk", text: "Doxorubicin ≥60 mg/m2" },
+{ id: "High emetic risk", text: "Epirubicin >90 mg/m2" },
+{ id: "High emetic risk", text: "Fam-trastuzumab deruxtecan-nxki" },
+{ id: "High emetic risk", text: "Ifosfamide ≥2 g/m2 per dose" },
+{ id: "High emetic risk", text: "Mechlorethamine" },
+{ id: "High emetic risk", text: "Melphalan ≥140 mg/m2" },
+{ id: "High emetic risk", text: "Sacituzumab govitecan-hziy" },
+{ id: "High emetic risk", text: "Streptozocin" },
+{ id: "High emetic risk", text: "Zolbetuximab-clzb" },
+{ id: "Moderate emetic risk", text: "Aldesleukin >12–15 million IU/m2 or 600,000 IU/kg" },
+{ id: "Moderate emetic risk", text: "Amifostine >300 mg/m2" },
+{ id: "Moderate emetic risk", text: "Bendamustine" },
+{ id: "Moderate emetic risk", text: "Busulfan" },
+{ id: "Moderate emetic risk", text: "Carboplatin AUC <4" },
+{ id: "Moderate emetic risk", text: "Carmustine ≤250 mg/m2" },
+{ id: "Moderate emetic risk", text: "Clofarabine" },
+{ id: "Moderate emetic risk", text: "Cyclophosphamide ≤1500 mg/m2" },
+{ id: "Moderate emetic risk", text: "Cytarabine >200 mg/m2" },
+{ id: "Moderate emetic risk", text: "Dactinomycin" },
+{ id: "Moderate emetic risk", text: "Daunorubicin" },
+{ id: "Moderate emetic risk", text: "Dinutuximab" },
+{ id: "Moderate emetic risk", text: "Doxorubicin <60 mg/m2" },
+{ id: "Moderate emetic risk", text: "Dual-drug liposomal encapsulation of cytarabine and daunorubicin" },
+{ id: "Moderate emetic risk", text: "Epirubicin ≤90 mg/m2" },
+{ id: "Moderate emetic risk", text: "Idarubicin" },
+{ id: "Moderate emetic risk", text: "Ifosfamide <2 g/m2 per dose" },
+{ id: "Moderate emetic risk", text: "Irinotecan" },
+{ id: "Moderate emetic risk", text: "Irinotecan (liposomal)" },
+{ id: "Moderate emetic risk", text: "Lurbinectedin" },
+{ id: "Moderate emetic risk", text: "Melphalan <140 mg/m2" },
+{ id: "Moderate emetic risk", text: "Methotrexatec ≥250 mg/m2" },
+{ id: "Moderate emetic risk", text: "Mirvetuximab soravtansine-gynx" },
+{ id: "Moderate emetic risk", text: "Naxitamab-gqgk" },
+{ id: "Moderate emetic risk", text: "Oxaliplatin" },
+{ id: "Moderate emetic risk", text: "Romidepsin" },
+{ id: "Moderate emetic risk", text: "Temozolomide" },
+{ id: "Moderate emetic risk", text: "Trabectedin" },
+{ id: "Low emetic risk", text: "Ado-trastuzumab emtansine" },
+{ id: "Low emetic risk", text: "Aldesleukin ≤12 million IU/m2" },
+{ id: "Low emetic risk", text: "Amifostine ≤300 mg/m2" },
+{ id: "Low emetic risk", text: "Amivantamab-vmjw" },
+{ id: "Low emetic risk", text: "Arsenic trioxide" },
+{ id: "Low emetic risk", text: "Axicabtagene ciloleucel" },
+{ id: "Low emetic risk", text: "Azacitidine" },
+{ id: "Low emetic risk", text: "Belinostat" },
+{ id: "Low emetic risk", text: "Brentuximab vedotin" },
+{ id: "Low emetic risk", text: "Brexucabtagene autoleucel" },
+{ id: "Low emetic risk", text: "Cabazitaxel" },
+{ id: "Low emetic risk", text: "Carfilzomib" },
+{ id: "Low emetic risk", text: "Ciltacabtagene autoleucel" },
+{ id: "Low emetic risk", text: "Copanlisib" },
+{ id: "Low emetic risk", text: "Cytarabine (low dose) 100 mg/m2 – 200 mg/m2" },
+{ id: "Low emetic risk", text: "Docetaxel" },
+{ id: "Low emetic risk", text: "Doxorubicin (liposomal)" },
+{ id: "Low emetic risk", text: "Elranatamab-bcmm" },
+{ id: "Low emetic risk", text: "Enfortumab vedotin-ejfv" },
+{ id: "Low emetic risk", text: "Epcoritamab-bysp" },
+{ id: "Low emetic risk", text: "Eribulin" },
+{ id: "Low emetic risk", text: "Etoposide" },
+{ id: "Low emetic risk", text: "Floxuridine" },
+{ id: "Low emetic risk", text: "5-Fluorouracil (5-FU)" },
+{ id: "Low emetic risk", text: "Gemcitabine" },
+{ id: "Low emetic risk", text: "Gemtuzumab ozogamicin" },
+{ id: "Low emetic risk", text: "Idecabtagene vicleucel" },
+{ id: "Low emetic risk", text: "Inotuzumab ozogamicin" },
+{ id: "Low emetic risk", text: "Isatuximab-irfc" },
+{ id: "Low emetic risk", text: "Ixabepilone" },
+{ id: "Low emetic risk", text: "Lifileucel" },
+{ id: "Low emetic risk", text: "Lisocabtagene maraleucel" },
+{ id: "Low emetic risk", text: "Loncastuximab tesirine-lpyl" },
+{ id: "Low emetic risk", text: "Methotrexate >50 mg/m2 – <250 mg/m2" },
+{ id: "Low emetic risk", text: "Mitomycin" },
+{ id: "Low emetic risk", text: "Mitomycin pyelocalyceal solution" },
+{ id: "Low emetic risk", text: "Mitoxantrone" },
+{ id: "Low emetic risk", text: "Mogamulizumab-kpkc" },
+{ id: "Low emetic risk", text: "Mosunetuzumab-axgb" },
+{ id: "Low emetic risk", text: "Necitumumab" },
+{ id: "Low emetic risk", text: "Omacetaxine" },
+{ id: "Low emetic risk", text: "Paclitaxel" },
+{ id: "Low emetic risk", text: "Paclitaxel-albumin" },
+{ id: "Low emetic risk", text: "Pemetrexed" },
+{ id: "Low emetic risk", text: "Pentostatin" },
+{ id: "Low emetic risk", text: "Polatuzumab vedotin-piig" },
+{ id: "Low emetic risk", text: "Pralatrexate" },
+{ id: "Low emetic risk", text: "Tafasitamab-cxix" },
+{ id: "Low emetic risk", text: "Tagraxofusp-erzs" },
+{ id: "Low emetic risk", text: "Talimogene laherparepvec" },
+{ id: "Low emetic risk", text: "Tebentafusp-tebn" },
+{ id: "Low emetic risk", text: "Thiotepa" },
+{ id: "Low emetic risk", text: "Tisagenlecleucel" },
+{ id: "Low emetic risk", text: "Tisotumab vedotin-tftv" },
+{ id: "Low emetic risk", text: "Topotecan" },
+{ id: "Low emetic risk", text: "Ziv-aflibercept" },
+{ id: "Minimal emetic risk", text: "Alemtuzumab" },
+{ id: "Minimal emetic risk", text: "Asparaginase" },
+{ id: "Minimal emetic risk", text: "Atezolizumab" },
+{ id: "Minimal emetic risk", text: "Atezolizumab and hyaluronidase-tqjs" },
+{ id: "Minimal emetic risk", text: "Avelumab" },
+{ id: "Minimal emetic risk", text: "Betibeglogene autotemcel" },
+{ id: "Minimal emetic risk", text: "Bevacizumab" },
+{ id: "Minimal emetic risk", text: "Bleomycin" },
+{ id: "Minimal emetic risk", text: "Blinatumomab" },
+{ id: "Minimal emetic risk", text: "Bortezomib" },
+{ id: "Minimal emetic risk", text: "Cemiplimab-rwlc" },
+{ id: "Minimal emetic risk", text: "Cetuximab" },
+{ id: "Minimal emetic risk", text: "Cladribine" },
+{ id: "Minimal emetic risk", text: "Cytarabine <100 mg/m2" },
+{ id: "Minimal emetic risk", text: "Daratumumab" },
+{ id: "Minimal emetic risk", text: "Daratumumab and hyaluronidase-fihj" },
+{ id: "Minimal emetic risk", text: "Decitabine" },
+{ id: "Minimal emetic risk", text: "Degarelix" },
+{ id: "Minimal emetic risk", text: "Dexrazoxane" },
+{ id: "Minimal emetic risk", text: "Dostarlimab-gxly" },
+{ id: "Minimal emetic risk", text: "Durvalumab" },
+{ id: "Minimal emetic risk", text: "Elotuzumab" },
+{ id: "Minimal emetic risk", text: "Fludarabine" },
+{ id: "Minimal emetic risk", text: "Fulvestrant" },
+{ id: "Minimal emetic risk", text: "Glofitamab-gxbm" },
+{ id: "Minimal emetic risk", text: "Goserelin" },
+{ id: "Minimal emetic risk", text: "Histrelin" },
+{ id: "Minimal emetic risk", text: "Imetelstat" },
+{ id: "Minimal emetic risk", text: "Ipilimumab" },
+{ id: "Minimal emetic risk", text: "Lanreotide" },
+{ id: "Minimal emetic risk", text: "Leuprolide" },
+{ id: "Minimal emetic risk", text: "Lovotibeglogene autotemcel" },
+{ id: "Minimal emetic risk", text: "Luspatercept-aamt" },
+{ id: "Minimal emetic risk", text: "Margetuximab-cmkb" },
+{ id: "Minimal emetic risk", text: "Methotrexate ≤50 mg/m2" },
+{ id: "Minimal emetic risk", text: "Nelarabine" },
+{ id: "Minimal emetic risk", text: "Nivolumab" },
+{ id: "Minimal emetic risk", text: "Nivolumab and hyaluronidase-nvhy" },
+{ id: "Minimal emetic risk", text: "Nivolumab/relatlimab-rmbw" },
+{ id: "Minimal emetic risk", text: "Obinutuzumab" },
+{ id: "Minimal emetic risk", text: "Octreotide" },
+{ id: "Minimal emetic risk", text: "Ofatumumab" },
+{ id: "Minimal emetic risk", text: "Panitumumab" },
+{ id: "Minimal emetic risk", text: "Pembrolizumab" },
+{ id: "Minimal emetic risk", text: "Pertuzumab" },
+{ id: "Minimal emetic risk", text: "Pertuzumab/trastuzumab and hyaluronidase-zzxf" },
+{ id: "Minimal emetic risk", text: "Ramucirumab" },
+{ id: "Minimal emetic risk", text: "Retifanlimab-dlwr" },
+{ id: "Minimal emetic risk", text: "Rituximab" },
+{ id: "Minimal emetic risk", text: "Rituximab and hyaluronidase" },
+{ id: "Minimal emetic risk", text: "Siltuximab" },
+{ id: "Minimal emetic risk", text: "Sirolimus-albumin" },
+{ id: "Minimal emetic risk", text: "Talquetamab-tgvs" },
+{ id: "Minimal emetic risk", text: "Tarlatamab-dlle" },
+{ id: "Minimal emetic risk", text: "Teclistamab-cqyv" },
+{ id: "Minimal emetic risk", text: "Temsirolimus" },
+{ id: "Minimal emetic risk", text: "Tislelizumab-jsgr" },
+{ id: "Minimal emetic risk", text: "Toripalimab-tpzi" },
+{ id: "Minimal emetic risk", text: "Trastuzumab" },
+{ id: "Minimal emetic risk", text: "Trastuzumab and hyaluronidase-oysk" },
+{ id: "Minimal emetic risk", text: "Tremelimumab-actl" },
+{ id: "Minimal emetic risk", text: "Triptorelin" },
+{ id: "Minimal emetic risk", text: "Valrubicin" },
+{ id: "Minimal emetic risk", text: "Vinblastine" },
+{ id: "Minimal emetic risk", text: "Vincristine" },
+{ id: "Minimal emetic risk", text: "Vincristine (liposomal)" },
+{ id: "Minimal emetic risk", text: "Vinorelbine" }
+        ];
+
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const searchTerm = document.getElementById('searchTerm').value.toLowerCase();
+            const resultsTable = document.getElementById('resultsTable');
+            resultsTable.innerHTML = '';
+
+            customLines.forEach(line => {
+                if (line.text.toLowerCase().includes(searchTerm)) {
+                    const row = `<tr>
+                        <td style="text-align:left;">${line.id}</td>
+                        <td style="text-align:left;">${line.text}</td>
+                    </tr>`;
+                    resultsTable.innerHTML += row;
+                }
+            });
+
+            if (!resultsTable.innerHTML) {
+                resultsTable.innerHTML = '<tr><td colspan="2" style="text-align:center; color:red;" ><b>NOT FOUND!!</b></td></tr>';
+            }
+        });
+    </script>
+<footer>
+    <p>&copy; MAY 2025 THANAWAT KAEWSAMERTA. All rights reserved.</p>
+NCCN Guidelines: Antiemesis version 1.2025 - March 27, 2025
+</footer>
+</body>
+</html>
